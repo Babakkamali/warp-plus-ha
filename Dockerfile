@@ -7,6 +7,9 @@ ENV GITHUB_API_URL="https://api.github.com/repos/$GITHUB_REPO/releases/latest"
 ENV INSTALL_DIR="/opt/warp-plus"
 ENV RUN_OPTIONS="--gool --scan --bind 0.0.0.0:8086"
 
+RUN addgroup --system --gid 1001 warp-plus
+RUN adduser --system --uid 1001 warp-plus
+
 RUN apk add --no-cache \
     curl \
     jq \
@@ -22,9 +25,6 @@ RUN mkdir -p $INSTALL_DIR \
     && rm $INSTALL_DIR/$APP_NAME
 
 COPY warp_healthcheck.sh /usr/local/bin/warp_healthcheck.sh
-
-RUN addgroup --system --gid 1001 warp-plus
-RUN adduser --system --uid 1001 warp-plus
 
 RUN chown warp-plus:warp-plus /usr/local/bin/warp_healthcheck.sh \
     && chmod 700 /usr/local/bin/warp_healthcheck.sh  # Make it executable for the owner only
