@@ -17,7 +17,8 @@ RUN mkdir -p $INSTALL_DIR \
     && curl -s $GITHUB_API_URL | jq -r '.assets[] | select(.name == "warp-plus_linux-amd64.zip") | .browser_download_url' \
     | xargs curl -L -o $INSTALL_DIR/$APP_NAME \
     && unzip $INSTALL_DIR/$APP_NAME -d $INSTALL_DIR \
-    && chmod +x $INSTALL_DIR/warp-plus \
+    && chmod 700 $INSTALL_DIR/warp-plus \
+    && chown warp-plus:warp-plus $INSTALL_DIR/warp-plus \
     && rm $INSTALL_DIR/$APP_NAME
 
 COPY warp_healthcheck.sh /usr/local/bin/warp_healthcheck.sh
@@ -33,7 +34,6 @@ WORKDIR $INSTALL_DIR
 USER warp-plus
 
 EXPOSE 8086
-
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
     CMD /usr/local/bin/warp_healthcheck.sh
