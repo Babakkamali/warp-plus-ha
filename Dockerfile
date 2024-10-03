@@ -11,6 +11,7 @@ RUN addgroup --system --gid 1001 warp-plus
 RUN adduser --system --uid 1001 warp-plus
 
 RUN apk add --no-cache \
+    bash \
     curl \
     jq \
     unzip
@@ -24,10 +25,10 @@ RUN mkdir -p $INSTALL_DIR \
     && chown warp-plus:warp-plus $INSTALL_DIR/warp-plus \
     && rm $INSTALL_DIR/$APP_NAME
 
-COPY warp_healthcheck.sh /usr/local/bin/warp_healthcheck.sh
+COPY healthcheck.sh /usr/local/bin/healthcheck.sh
 
-RUN chown warp-plus:warp-plus /usr/local/bin/warp_healthcheck.sh \
-    && chmod 700 /usr/local/bin/warp_healthcheck.sh  # Make it executable for the owner only
+RUN chown warp-plus:warp-plus /usr/local/bin/healthcheck.sh \
+    && chmod 700 /usr/local/bin/healthcheck.sh  # Make it executable for the owner only
 
 WORKDIR $INSTALL_DIR
 
@@ -36,6 +37,6 @@ USER warp-plus
 EXPOSE 8086
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD /usr/local/bin/warp_healthcheck.sh
+    CMD /usr/local/bin/healthcheck.sh '' '' 127.0.0.1 8086
 
 ENTRYPOINT ["sh", "-c", "./warp-plus $RUN_OPTIONS"]

@@ -6,10 +6,13 @@ RUN apk add --no-cache \
     curl \
     bash
 
-COPY haproxy_healthcheck.sh /usr/local/etc/haproxy/haproxy_healthcheck.sh
+COPY healthcheck.sh /usr/local/etc/haproxy/healthcheck.sh
 
 
-RUN chown haproxy:haproxy /usr/local/etc/haproxy/haproxy_healthcheck.sh \
-    && chmod 700 /usr/local/etc/haproxy/haproxy_healthcheck.sh
+RUN chown haproxy:haproxy /usr/local/etc/haproxy/healthcheck.sh \
+    && chmod 700 /usr/local/etc/haproxy/healthcheck.sh
 
 USER haproxy
+
+# in seconds
+ENV MAX_LATENCY="1.0"
