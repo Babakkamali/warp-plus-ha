@@ -13,25 +13,9 @@ x-warp-plus-psiphon: &warp-plus-psiphon
     RUN_OPTIONS: "--cfon --scan --bind 0.0.0.0:8086"
 
 services:
-  ## gool services
-  gool-1:
-    <<: *warp-plus-gool
+{{GOOL_SERVICES}}
 
-  gool-2:
-    <<: *warp-plus-gool
-
-  gool-3:
-    <<: *warp-plus-gool
-
-  ## psiphon services
-  psiphon-1:
-    <<: *warp-plus-psiphon
-
-  psiphon-2:
-    <<: *warp-plus-psiphon
-  
-  psiphon-3:
-    <<: *warp-plus-psiphon
+{{PSIPHON_SERVICES}}
 
   haproxy:
     build:
@@ -44,12 +28,7 @@ services:
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     depends_on:
-      - gool-1
-      - gool-2
-      - gool-3
-      - psiphon-1
-      - psiphon-2
-      - psiphon-3
+{{HAPROXY_DEPENDENCIES}}
     labels:
       autoheal-app: true
     restart: always
