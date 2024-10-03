@@ -1,0 +1,63 @@
+x-warp-plus-gool: &warp-plus-gool
+  build: 
+    context: .
+    dockerfile: Dockerfile
+  image: warp-plus:latest
+  labels:
+    autoheal-app: true
+  restart: always
+
+x-warp-plus-psiphon: &warp-plus-psiphon
+  <<: *warp-plus-gool
+  environment:
+    RUN_OPTIONS: "--cfon --scan --bind 0.0.0.0:8086"
+
+services:
+  ## gool services
+  gool-1:
+    <<: *warp-plus-gool
+
+  gool-2:
+    <<: *warp-plus-gool
+
+  gool-3:
+    <<: *warp-plus-gool
+
+  ## psiphon services
+  psiphon-1:
+    <<: *warp-plus-psiphon
+
+  psiphon-2:
+    <<: *warp-plus-psiphon
+  
+  psiphon-3:
+    <<: *warp-plus-psiphon
+
+  haproxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.haproxy
+    image: haproxy-warp:latest
+    ports:
+      - "1080:1080"
+      - "1081:1081"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    depends_on:
+      - gool-1
+      - gool-2
+      - gool-3
+      - psiphon-1
+      - psiphon-2
+      - psiphon-3
+    restart: always
+
+  autoheal:
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal-app
+    image: willfarrell/autoheal:latest
+    network_mode: none
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
