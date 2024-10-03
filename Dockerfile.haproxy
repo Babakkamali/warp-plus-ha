@@ -16,3 +16,6 @@ USER haproxy
 
 # in seconds
 ENV MAX_LATENCY="1.0"
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost/health || exit 1

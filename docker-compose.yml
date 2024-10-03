@@ -50,6 +50,8 @@ services:
       - psiphon-1
       - psiphon-2
       - psiphon-3
+    labels:
+      autoheal-app: true
     restart: always
 
   autoheal:
