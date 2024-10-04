@@ -6,6 +6,8 @@ NUM_PSIPHON ?= 3
 # Phony targets
 .PHONY: all generate up down clean ensure-exec
 
+FORCE:
+
 # Default target
 all: generate
 
@@ -18,7 +20,7 @@ ensure-exec:
 # Generate configuration files
 generate: ensure-exec docker-compose.yml haproxy.cfg
 
-docker-compose.yml haproxy.cfg: generate_configs.sh
+docker-compose.yml haproxy.cfg: generate_configs.sh FORCE
 	./generate_configs.sh $(NUM_GOOL) $(NUM_PSIPHON)
 
 # Start Docker Compose services, removing orphan containers if necessary
@@ -36,8 +38,7 @@ down:
 
 
 # Clean up generated files
-clean:
-	@$(MAKE) down
+clean: down
 	@if [ -f docker-compose.yml ] || [ -f haproxy.cfg ]; then \
 		rm -f docker-compose.yml haproxy.cfg; \
 		echo "Removed generated configuration files."; \
