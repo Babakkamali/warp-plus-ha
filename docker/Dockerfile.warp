@@ -25,7 +25,7 @@ RUN mkdir -p $INSTALL_DIR \
     && chown warp-plus:warp-plus $INSTALL_DIR/warp-plus \
     && rm $INSTALL_DIR/$APP_NAME
 
-COPY healthcheck.sh /usr/local/bin/healthcheck.sh
+COPY scripts/healthcheck.sh /usr/local/bin/healthcheck.sh
 
 RUN chown warp-plus:warp-plus /usr/local/bin/healthcheck.sh \
     && chmod 700 /usr/local/bin/healthcheck.sh  # Make it executable for the owner only

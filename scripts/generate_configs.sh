@@ -7,7 +7,6 @@ set -e
 NUM_GOOL=${1:-3}
 NUM_PSIPHON=${2:-3}
 
-# Initialize variables
 GOOL_SERVICES=""
 PSIPHON_SERVICES=""
 HAPROXY_DEPENDENCIES=""
@@ -73,7 +72,7 @@ fi
 sed '/{{GOOL_SERVICES}}/{
     r gool_services.tmp
     d
-}' docker-compose.yml.template | \
+}' docker/docker-compose.yml.template | \
 sed '/{{PSIPHON_SERVICES}}/{
     r psiphon_services.tmp
     d
@@ -86,7 +85,7 @@ sed '/{{HAPROXY_DEPENDENCIES}}/{
 echo "docker-compose.yml has been ${status_docker}."
 
 # Generate haproxy.cfg
-if [ -f haproxy.cfg ]; then
+if [ -f haproxy/haproxy.cfg ]; then
     status_haproxy="replaced"
 else
     status_haproxy="created"
@@ -95,13 +94,13 @@ fi
 sed '/{{GOOL_SERVERS}}/{
     r gool_servers.tmp
     d
-}' haproxy.cfg.template | \
+}' haproxy/haproxy.cfg.template | \
 sed '/{{PSIPHON_SERVERS}}/{
     r psiphon_servers.tmp
     d
-}' > haproxy.cfg
+}' > haproxy/haproxy.cfg
 
-echo "haproxy.cfg has been ${status_haproxy}."
+echo "haproxy/haproxy.cfg has been ${status_haproxy}."
 
 # Clean up temporary files
 rm -f gool_services.tmp psiphon_services.tmp haproxy_dependencies.tmp gool_servers.tmp psiphon_servers.tmp

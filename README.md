@@ -59,10 +59,10 @@ sudo apt install -y \
 
 3. **Set Execution Permissions**
 
-   Ensure that the `generate_configs.sh` script is executable:
+   Ensure that the `scripts/generate_configs.sh` script is executable:
 
    ```
-   chmod +x generate_configs.sh
+   chmod +x scripts/generate_configs.sh
    ```
 
 ## Usage
@@ -71,7 +71,7 @@ The project uses a Makefile to simplify common tasks such as generating configur
 
 ### Generate Configuration Files
 
-To generate the `docker-compose.yml` and `haproxy.cfg` files with default settings:
+To generate the `docker-compose.yml` and `haproxy/haproxy.cfg` files with default settings:
 
 ```
 make generate
@@ -112,11 +112,11 @@ make clean
 The project uses template files to generate the necessary configuration files dynamically.
 
 - **Templates:**
-  - `docker-compose.yml.template`
-  - `haproxy.cfg.template`
+  - `docker/docker-compose.yml.template`
+  - `haproxy/haproxy.cfg.template`
 
 - **Scripts:**
-  - `generate_configs.sh`: Generates the configuration files based on the templates and the specified number of services.
+  - `scripts/generate_configs.sh`: Generates the configuration files based on the templates and the specified number of services.
 
 ### Customizing the Number of Services
 

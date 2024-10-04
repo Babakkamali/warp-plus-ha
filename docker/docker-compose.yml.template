@@ -1,7 +1,7 @@
 x-warp-plus-gool: &warp-plus-gool
   build: 
     context: .
-    dockerfile: Dockerfile
+    dockerfile: docker/Dockerfile.warp
   image: warp-plus:latest
   labels:
     autoheal-app: true
@@ -20,13 +20,13 @@ services:
   haproxy:
     build:
       context: .
-      dockerfile: Dockerfile.haproxy
+      dockerfile: docker/Dockerfile.haproxy
     image: haproxy-warp:latest
     ports:
       - "1080:1080"
       - "1081:1081"
     volumes:
-      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     depends_on:
 {{HAPROXY_DEPENDENCIES}}
     labels:

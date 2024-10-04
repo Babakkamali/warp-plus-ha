@@ -6,7 +6,7 @@ RUN apk add --no-cache \
     curl \
     bash
 
-COPY healthcheck.sh /usr/local/etc/haproxy/healthcheck.sh
+COPY scripts/healthcheck.sh /usr/local/etc/haproxy/healthcheck.sh
 
 
 RUN chown haproxy:haproxy /usr/local/etc/haproxy/healthcheck.sh \
