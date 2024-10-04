@@ -22,7 +22,7 @@ docker-compose.yml haproxy.cfg: generate_configs.sh
 	./generate_configs.sh $(NUM_GOOL) $(NUM_PSIPHON)
 
 # Start Docker Compose services, removing orphan containers if necessary
-up: generate
+up: 
 	docker compose up -d --remove-orphans
 
 
