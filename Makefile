@@ -4,15 +4,15 @@ NUM_PSIPHON ?= 3
 all: generate
 
 generate:
-	chmod +x generate_configs.sh
+	chmod 754 generate_configs.sh
 	./generate_configs.sh $(NUM_GOOL) $(NUM_PSIPHON)
 
-up: generate
+up: down generate
 	docker compose up -d
 
 down:
 	docker compose down
 
 clean:
-	docker compose down -v
+	docker compose down
 	rm -f docker-compose.yml haproxy.cfg
