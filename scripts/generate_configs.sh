@@ -4,8 +4,8 @@
 set -e
 
 # Source environment variables from .env file
-if [ -f ../.env ]; then
-    export $(grep -v '^#' ../.env | xargs)
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
 else
     echo "Error: .env file not found. Please create one from .env.example by using make init"
     exit 1
