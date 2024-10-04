@@ -4,32 +4,43 @@ NUM_PSIPHON ?= 3
 
 
 # Phony targets
-.PHONY: all generate up down clean
+.PHONY: all generate up down clean ensure-exec
 
 # Default target
 all: generate
 
-generate:
-	chmod 754 generate_configs.sh
-	./generate_configs.sh $(NUM_GOOL) $(NUM_PSIPHON)
-
-# Generate configuration files
-generate: docker-compose.yml haproxy.cfg
-
-docker-compose.yml haproxy.cfg: generate_configs.sh
+ensure-exec:
 	@if [ ! -x generate_configs.sh ]; then \
-		chmod 754 generate_configs.sh; \
+		chmod +x generate_configs.sh; \
 		echo "Set executable permission on generate_configs.sh"; \
 	fi
+
+# Generate configuration files
+generate: ensure-exec docker-compose.yml haproxy.cfg
+
+docker-compose.yml haproxy.cfg: generate_configs.sh
 	./generate_configs.sh $(NUM_GOOL) $(NUM_PSIPHON)
 
-# up will take down all containers incase you have lowered the number of instances
-up: down generate
-	docker compose up -d
+# Start Docker Compose services, removing orphan containers if necessary
+up: generate
+	docker compose up -d --remove-orphans
 
+
+# Stop Docker Compose services
 down:
-	docker compose down
+	@if [ -f docker-compose.yml ]; then \
+		docker compose down; \
+	else \
+		echo "No docker-compose.yml found. Services are already stopped."; \
+	fi
 
-# takes the containers down and removes all the generated config files
-clean: down	
-	rm -f docker-compose.yml haproxy.cfg
+
+# Clean up generated files
+clean:
+	@$(MAKE) down
+	@if [ -f docker-compose.yml ] || [ -f haproxy.cfg ]; then \
+		rm -f docker-compose.yml haproxy.cfg; \
+		echo "Removed generated configuration files."; \
+	else \
+		echo "No generated configuration files to remove. Already clean."; \
+	fi
