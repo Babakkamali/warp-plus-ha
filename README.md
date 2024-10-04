@@ -10,9 +10,6 @@ This project provides an easy, automated, scalable, and resilient proxy solution
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
-- [Project Structure](#project-structure)
-- [Best Practices](#best-practices)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Overview
@@ -94,13 +91,6 @@ Generate the configuration files and start all services:
 make up
 ```
 
-This command is equivalent to:
-
-```
-make generate
-docker-compose up
-```
-
 ### Stop the Services
 
 To stop all running services:
@@ -135,28 +125,9 @@ You can customize the number of gool and Psiphon services by setting the `NUM_GO
 Example:
 
 ```
-make up NUM_GOOL=5 NUM_PSIPHON=3
+make generate NUM_GOOL=2 NUM_PSIPHON=5
+make up
 ```
-
-## Project Structure
-
-- **Dockerfile**: Builds the Warp Plus service image.
-- **Dockerfile.haproxy**: Builds the HAProxy image.
-- **generate_configs.sh**: Bash script to generate configuration files from templates.
-- **docker-compose.yml.template**: Template for the Docker Compose configuration.
-- **haproxy.cfg.template**: Template for the HAProxy configuration.
-- **Makefile**: Automates tasks like generating configs, starting/stopping services, and cleaning up.
-- **healthcheck.sh**: Script used by HAProxy for health checks.
-- **.gitignore**: Specifies files to be ignored by Git (e.g., generated configs).
-- **README.md**: Documentation and usage instructions.
-
-## Best Practices
-
-- **Version Control**: Generated files like `docker-compose.yml` and `haproxy.cfg` are added to `.gitignore` to prevent them from being tracked in Git.
-- **Scripted Automation**: Use the `Makefile` and `generate_configs.sh` script to automate repetitive tasks and ensure consistency.
-- **Health Checks**: Regular health checks and auto-healing ensure high availability and reliability.
-- **Resource Management**: Monitor the number of service instances to optimize resource usage and performance.
-
 
 ## License
 
