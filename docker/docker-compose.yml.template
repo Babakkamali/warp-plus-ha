@@ -14,9 +14,13 @@ x-warp-plus-psiphon: &warp-plus-psiphon
     RUN_OPTIONS: "--cfon --scan --bind 0.0.0.0:8086"
 
 services:
+### gool services
 {{GOOL_SERVICES}}
+###
 
+### psiphon services
 {{PSIPHON_SERVICES}}
+###
 
   haproxy:
     build:
