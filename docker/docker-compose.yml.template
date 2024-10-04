@@ -5,13 +5,17 @@ x-warp-plus-gool: &warp-plus-gool
   image: warp-plus:latest
   pull_policy: never
   labels:
-    autoheal-app: true
+    autoheal-app: ${GOOL_AUTOHEAL_APP}
   restart: always
+  environment:
+    RUN_OPTIONS: ${GOOL_RUN_OPTIONS}
 
 x-warp-plus-psiphon: &warp-plus-psiphon
   <<: *warp-plus-gool
   environment:
-    RUN_OPTIONS: "--cfon --scan --bind 0.0.0.0:8086"
+    RUN_OPTIONS: ${PSIPHON_RUN_OPTIONS}
+  labels:
+    autoheal-app: ${PSIPHON_AUTOHEAL_APP}
 
 services:
 ### gool services
@@ -29,20 +33,20 @@ services:
     image: haproxy-warp:latest
     pull_policy: never
     ports:
-      - "1080:1080"
-      - "1081:1081"
+      - "${HAPROXY_GOOL_PORT}:1080"
+      - "${HAPROXY_PSIPHON_PORT}:1081"
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     depends_on:
 {{HAPROXY_DEPENDENCIES}}
     labels:
-      autoheal-app: true
+      autoheal-app: ${HAPROXY_AUTOHEAL_APP}
     restart: always
 
   autoheal:
     environment:
       AUTOHEAL_CONTAINER_LABEL: autoheal-app
-    image: willfarrell/autoheal:latest
+    image: ${IMAGE_AUTOHEAL}
     network_mode: none
     restart: always
     volumes:

@@ -1,5 +1,6 @@
 # Use the latest Alpine image
-FROM alpine:latest
+ARG BASE_IMAGE_WARP=alpine:latest
+FROM ${BASE_IMAGE_WARP}
 
 ENV APP_NAME="warp-plus_linux-amd64.zip"
 ENV GITHUB_REPO="bepass-org/warp-plus"
