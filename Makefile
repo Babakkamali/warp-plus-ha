@@ -1,9 +1,5 @@
-# Number of GOOL and PSIPHON instances (defaults to 3 if not set)
-NUM_GOOL ?= 3
-NUM_PSIPHON ?= 3
-
 # Phony targets to prevent conflicts with file names
-.PHONY: all generate up ps down clean build ensure-exec require-configs
+.PHONY: all generate up ps down clean build ensure-exec require-configs init
 
 # Default target
 all: generate
@@ -28,9 +24,18 @@ require-configs:
         $(call CHECK_FILE, docker-compose.yml, "Error: 'docker-compose.yml' does not exist. Please run 'make generate' first.")
         $(call CHECK_FILE, haproxy/haproxy.cfg, "Error: 'haproxy/haproxy.cfg' does not exist. Please run 'make generate' first.")
 
+# Initialize the environment by copying .env.example to .env if .env does not exist
+init:
+	@if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		echo "Copied .env.example to .env. Please review and modify as needed."; \
+	else \
+		echo ".env already exists. Skipping copy."; \
+	fi
+        
 # Generate configuration files
 generate: ensure-exec
-        ./scripts/generate_configs.sh $(NUM_GOOL) $(NUM_PSIPHON)
+        ./scripts/generate_configs.sh
 
 # Start Docker Compose services, removing orphan containers if necessary
 up: require-configs
