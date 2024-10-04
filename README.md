@@ -69,6 +69,16 @@ sudo apt install -y \
 
 The project uses a Makefile to simplify common tasks such as generating configuration files, starting up the services, and cleaning up. Below are the available commands and how to use them.
 
+### Create .env File
+
+To create .env file from .env.example you can simply run:
+
+```
+make init
+```
+
+you can read all the variables and change them to your needs
+
 ### Generate Configuration Files
 
 To generate the `docker-compose.yml` and `haproxy/haproxy.cfg` files with default settings:
@@ -77,11 +87,16 @@ To generate the `docker-compose.yml` and `haproxy/haproxy.cfg` files with defaul
 make generate
 ```
 
-To specify the number of gool and Psiphon services, use:
+To specify the number of gool and Psiphon services, edit .env file:
 
 ```
-make generate NUM_GOOL=5 NUM_PSIPHON=4
+# Number of GOOL instances
+NUM_GOOL=5
+
+# Number of PSIPHON instances
+NUM_PSIPHON=2
 ```
+and rerun generate command from make file
 
 ### Start the Services
 
@@ -105,6 +120,14 @@ To stop all services and remove generated configuration files:
 
 ```
 make clean
+```
+
+### Satch Service Status
+
+To watch all services health and status simply run:
+
+```
+make ps
 ```
 
 ## Configuration
