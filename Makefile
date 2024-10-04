@@ -2,44 +2,53 @@
 NUM_GOOL ?= 3
 NUM_PSIPHON ?= 3
 
-
-# Phony targets
-.PHONY: all generate up ps down clean ensure-exec
+# Phony targets to prevent conflicts with file names
+.PHONY: all generate up ps down clean build ensure-exec require-configs
 
 # Default target
 all: generate
 
+# Ensure generate_configs.sh is executable
 ensure-exec:
-	@if [ ! -x scripts/generate_configs.sh ]; then \
-		chmod +x scripts/generate_configs.sh; \
-		echo "Set executable permission on scripts/generate_configs.sh"; \
-	fi
+        @if [ ! -x scripts/generate_configs.sh ]; then \
+                chmod +x scripts/generate_configs.sh; \
+                echo "Set executable permission on scripts/generate_configs.sh"; \
+        fi
+
+# Macro to check the existence of a file with a custom message
+define CHECK_FILE
+        @if [ ! -f $1 ]; then \
+                echo "$2"; \
+                exit 1; \
+        fi
+endef
+
+# Target to require both docker-compose.yml and haproxy/haproxy.cfg
+require-configs:
+        $(call CHECK_FILE, docker-compose.yml, "Error: 'docker-compose.yml' does not exist. Please run 'make generate' first.")
+        $(call CHECK_FILE, haproxy/haproxy.cfg, "Error: 'haproxy/haproxy.cfg' does not exist. Please run 'make generate' first.")
 
 # Generate configuration files
 generate: ensure-exec
-	./scripts/generate_configs.sh $(NUM_GOOL) $(NUM_PSIPHON)
+        ./scripts/generate_configs.sh $(NUM_GOOL) $(NUM_PSIPHON)
 
 # Start Docker Compose services, removing orphan containers if necessary
-up: 
-	docker compose up -d --remove-orphans
+up: require-configs
+        docker compose up -d --remove-orphans
 
-ps: 
-	watch -n 0.5 "docker compose ps"
+# Monitor Docker Compose services
+ps: require-configs
+        watch -n 0.5 "docker compose ps"
 
 # Stop Docker Compose services
-down:
-	@if [ -f docker-compose.yml ]; then \
-		docker compose down; \
-	else \
-		echo "No docker-compose.yml found. Services are already stopped."; \
-	fi
-
+down: require-configs
+        docker compose down
 
 # Clean up generated files
 clean: down
-	@if [ -f docker-compose.yml ] || [ -f haproxy/haproxy.cfg ]; then \
-		rm -f docker-compose.yml haproxy/haproxy.cfg; \
-		echo "Removed generated configuration files."; \
-	else \
-		echo "No generated configuration files to remove. Already clean."; \
-	fi
+        rm -f docker-compose.yml haproxy/haproxy.cfg
+        echo "Removed generated configuration files."
+
+# Build Docker images without using cache
+build: require-configs
+        docker compose build --no-cache
