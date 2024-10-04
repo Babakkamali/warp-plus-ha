@@ -40,6 +40,7 @@ generate: ensure-exec
 # Start Docker Compose services, removing orphan containers if necessary
 up: require-configs
 	docker compose up -d --remove-orphans
+	docker compose restart haproxy
 
 # Monitor Docker Compose services
 ps: require-configs
