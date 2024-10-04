@@ -3,9 +3,21 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Default number of services if not provided
-NUM_GOOL=${1:-3}
-NUM_PSIPHON=${2:-3}
+ENV_FILE=".env"
+# Source environment variables from .env file
+if [ -f "$ENV_FILE" ]; then
+    # Export all variables from .env, handling quotes and spaces correctly
+    set -a
+    source "$ENV_FILE"
+    set +a
+else
+    echo "Error: .env file not found. Please create one from .env.example by using make init"
+    exit 1
+fi
+
+# Use the sourced environment variables
+NUM_GOOL=${NUM_GOOL}
+NUM_PSIPHON=${NUM_PSIPHON}
 
 GOOL_SERVICES=""
 PSIPHON_SERVICES=""
