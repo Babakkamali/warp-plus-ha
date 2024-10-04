@@ -3,9 +3,13 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+ENV_FILE=".env"
 # Source environment variables from .env file
-if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+if [ -f "$ENV_FILE" ]; then
+    # Export all variables from .env, handling quotes and spaces correctly
+    set -a
+    source "$ENV_FILE"
+    set +a
 else
     echo "Error: .env file not found. Please create one from .env.example by using make init"
     exit 1
