@@ -4,7 +4,7 @@ NUM_PSIPHON ?= 3
 
 
 # Phony targets
-.PHONY: all generate up down clean ensure-exec
+.PHONY: all generate up down clean ensure-exec FORCE
 
 FORCE:
 
