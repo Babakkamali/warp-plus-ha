@@ -3,6 +3,7 @@ x-warp-plus-gool: &warp-plus-gool
     context: .
     dockerfile: docker/Dockerfile.warp
   image: warp-plus:latest
+  pull_policy: never
   labels:
     autoheal-app: true
   restart: always
@@ -22,6 +23,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.haproxy
     image: haproxy-warp:latest
+    pull_policy: never
     ports:
       - "1080:1080"
       - "1081:1081"
