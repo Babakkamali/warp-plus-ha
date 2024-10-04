@@ -4,25 +4,27 @@ NUM_PSIPHON ?= 3
 
 
 # Phony targets
-.PHONY: all generate up down clean ensure-exec
+.PHONY: all generate up ps down clean ensure-exec
 
 # Default target
 all: generate
 
 ensure-exec:
-	@if [ ! -x generate_configs.sh ]; then \
-		chmod +x generate_configs.sh; \
-		echo "Set executable permission on generate_configs.sh"; \
+	@if [ ! -x scripts/generate_configs.sh ]; then \
+		chmod +x scripts/generate_configs.sh; \
+		echo "Set executable permission on scripts/generate_configs.sh"; \
 	fi
 
 # Generate configuration files
 generate: ensure-exec
-	./generate_configs.sh $(NUM_GOOL) $(NUM_PSIPHON)
+	./scripts/generate_configs.sh $(NUM_GOOL) $(NUM_PSIPHON)
 
 # Start Docker Compose services, removing orphan containers if necessary
 up: 
 	docker compose up -d --remove-orphans
 
+ps: 
+	watch -n 0.5 "docker compose ps"
 
 # Stop Docker Compose services
 down:
@@ -35,8 +37,8 @@ down:
 
 # Clean up generated files
 clean: down
-	@if [ -f docker-compose.yml ] || [ -f haproxy.cfg ]; then \
-		rm -f docker-compose.yml haproxy.cfg; \
+	@if [ -f docker-compose.yml ] || [ -f haproxy/haproxy.cfg ]; then \
+		rm -f docker-compose.yml haproxy/haproxy.cfg; \
 		echo "Removed generated configuration files."; \
 	else \
 		echo "No generated configuration files to remove. Already clean."; \
