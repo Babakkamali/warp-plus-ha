@@ -18,7 +18,7 @@ x-warp-plus-psiphon: &warp-plus-psiphon
     autoheal-app: ${PSIPHON_AUTOHEAL_APP}
 
 x-xray-core: &xray-core
-  image: teddysun/xray:latest
+  image: ${BASE_IMAGE_XRAY}
   restart: always
 
 services:
