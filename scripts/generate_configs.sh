@@ -40,8 +40,8 @@ fi
 # Conditional check for SOCKS_PUBLISH
 if [ "$HAPROXY_SOCKS_PUBLISH" = "true" ]; then
   HAPROXY_PORTS='    ports:
-      - "${HAPROXY_GOOL_PORT}:1080"
-      - "${HAPROXY_PSIPHON_PORT}:1081"'
+          - "${HAPROXY_GOOL_PORT}:1080"
+          - "${HAPROXY_PSIPHON_PORT}:1081"'
 else
   echo "SOCKS publishing disabled. Skipping port publishing."
 fi
@@ -61,30 +61,48 @@ for i in $(seq 1 $NUM_PSIPHON); do
 done
 
 # Xray Docker Compose service generation
-# Check if XRAY_ENABLED is set to true
-if [ "$XRAY_ENABLED" = "true" ]; then
+# Check if any of the XRAY_*_ENABLED variables are set to true
+if [ "$XRAY_ENABLED" = "true" ] || [ "$XRAY_LOCAL_ENABLED" = "true" ]; then
     echo "Xray Docker services are enabled. Generating docker-compose services..."
 
-    # Generate the xray-gool service
-    XRAY_SERVICES+="  xray-gool:\n"
-    XRAY_SERVICES+="    <<: *xray-core\n"
-    XRAY_SERVICES+="    ports:\n"
-    XRAY_SERVICES+="      - \"${XRAY_GOOL_PORT}:${XRAY_GOOL_PORT}\"\n"
-    XRAY_SERVICES+="    volumes:\n"
-    XRAY_SERVICES+="      - ./xray/gool_config.json:/etc/xray/config.json\n"
-    XRAY_SERVICES+="\n"
+    # Generate the xray-gool and xray-psiphon services if XRAY_ENABLED is true
+    if [ "$XRAY_ENABLED" = "true" ]; then
+        XRAY_SERVICES+="  xray-gool:\n"
+        XRAY_SERVICES+="    <<: *xray-core\n"
+        XRAY_SERVICES+="    ports:\n"
+        XRAY_SERVICES+="      - \"${XRAY_GOOL_PORT}:${XRAY_GOOL_PORT}\"\n"
+        XRAY_SERVICES+="    volumes:\n"
+        XRAY_SERVICES+="      - ./xray/gool_config.json:/etc/xray/config.json\n"
+        XRAY_SERVICES+="\n"
 
-    # Generate the xray-psiphon service
-    XRAY_SERVICES+="  xray-psiphon:\n"
-    XRAY_SERVICES+="    <<: *xray-core\n"
-    XRAY_SERVICES+="    ports:\n"
-    XRAY_SERVICES+="      - \"${XRAY_PSIPHON_PORT}:${XRAY_PSIPHON_PORT}\"\n"
-    XRAY_SERVICES+="    volumes:\n"
-    XRAY_SERVICES+="      - ./xray/psiphon_config.json:/etc/xray/config.json\n"
-    XRAY_SERVICES+="\n"
+        XRAY_SERVICES+="  xray-psiphon:\n"
+        XRAY_SERVICES+="    <<: *xray-core\n"
+        XRAY_SERVICES+="    ports:\n"
+        XRAY_SERVICES+="      - \"${XRAY_PSIPHON_PORT}:${XRAY_PSIPHON_PORT}\"\n"
+        XRAY_SERVICES+="    volumes:\n"
+        XRAY_SERVICES+="      - ./xray/psiphon_config.json:/etc/xray/config.json\n"
+        XRAY_SERVICES+="\n"
+    else
+        echo "XRAY_ENABLED is false. Skipping xray-gool and xray-psiphon services."
+    fi
+
+    # Generate the xray-local service if XRAY_LOCAL_ENABLED is true
+    if [ "$XRAY_LOCAL_ENABLED" = "true" ]; then
+        echo "xray-local service is enabled. Generating docker-compose service..."
+
+        XRAY_SERVICES+="  xray-local:\n"
+        XRAY_SERVICES+="    <<: *xray-core\n"
+        XRAY_SERVICES+="    ports:\n"
+        XRAY_SERVICES+="      - \"${XRAY_LOCAL_PORT}:${XRAY_LOCAL_PORT}\"\n"
+        XRAY_SERVICES+="    volumes:\n"
+        XRAY_SERVICES+="      - ./xray/local_config.json:/etc/xray/config.json\n"
+        XRAY_SERVICES+="\n"
+    else
+        echo "XRAY_LOCAL_ENABLED is false. Skipping xray-local service."
+    fi
 
 else
-    # Don't add Xray services to dependencies if XRAY_ENABLED is false
+    # Don't add Xray services to dependencies if XRAY_ENABLED and XRAY_LOCAL_ENABLED are false
     echo "Xray services are disabled. Skipping Docker Compose service generation."
 fi
 
@@ -186,10 +204,9 @@ echo "haproxy/haproxy.cfg has been ${status_haproxy}."
 # Clean up temporary files
 rm -f gool_services.tmp psiphon_services.tmp haproxy_dependencies.tmp gool_servers.tmp psiphon_servers.tmp xray_services.tmp haproxy_ports.tmp docker-compose.yml.intermediate
 
-
 ### xray config generation
-# Check if XRAY_ENABLED is set to true
-if [ "$XRAY_ENABLED" = "true" ]; then
+# Check if any xray configuration is enabled
+if [ "$XRAY_ENABLED" = "true" ] || [ "$XRAY_LOCAL_ENABLED" = "true" ]; then
     echo "Xray configuration is enabled. Generating config files..."
 
     # Paths to the template and output config files
@@ -199,11 +216,12 @@ if [ "$XRAY_ENABLED" = "true" ]; then
 
     # Function to generate config files and provide feedback
     generate_xray_config() {
-        local output_file=$1
-        local port_var=$2
-        local uuid_var=$3
-        local email_var=$4
-        local outbound_port_var=$5
+        local template_file=$1
+        local output_file=$2
+        local port_var=$3
+        local uuid_var=$4
+        local email_var=$5
+        local outbound_port_var=$6  # May be empty
 
         # Check if the output file exists
         if [ -f "$output_file" ]; then
@@ -212,22 +230,35 @@ if [ "$XRAY_ENABLED" = "true" ]; then
             status="created"
         fi
 
+        # Build sed expression
+        sed_expr="s/\${XRAY_PORT}/${!port_var}/g; s/\${XRAY_UUID}/${!uuid_var}/g; s/\${XRAY_EMAIL}/${!email_var}/g"
 
-       # Replace placeholders in the template and generate the output file
-       sed -e "s/\${XRAY_PORT}/${!port_var}/g" \
-           -e "s/\${XRAY_UUID}/${!uuid_var}/g" \
-           -e "s/\${XRAY_EMAIL}/${!email_var}/g" \
-           -e "s/\${XRAY_OUTBOUND_PORT}/${!outbound_port_var}/g" \
-           "$TEMPLATE_FILE" > "$output_file"
-           # Provide feedback to the user
-           echo "$output_file has been $status."
-       }
- 
-    # Generate config files for GOOL
-    generate_xray_config "$GOOL_OUTPUT_FILE" "XRAY_GOOL_PORT" "XRAY_GOOL_UUID" "XRAY_GOOL_EMAIL" "HAPROXY_GOOL_PORT"
+        # If outbound_port_var is not empty, add replacement
+        if [ -n "$outbound_port_var" ]; then
+            sed_expr+="; s/\${XRAY_OUTBOUND_PORT}/${!outbound_port_var}/g"
+        fi
 
-    # Generate config files for PSIPHON
-    generate_xray_config "$PSIPHON_OUTPUT_FILE" "XRAY_PSIPHON_PORT" "XRAY_PSIPHON_UUID" "XRAY_PSIPHON_EMAIL" "HAPROXY_PSIPHON_PORT"
+        # Replace placeholders in the template and generate the output file
+        sed -e "$sed_expr" "$template_file" > "$output_file"
+
+        # Provide feedback to the user
+        echo "$output_file has been $status."
+    }
+
+    # Generate config files for GOOL if XRAY_ENABLED=true
+    if [ "$XRAY_ENABLED" = "true" ]; then
+        generate_xray_config "$TEMPLATE_FILE" "$GOOL_OUTPUT_FILE" "XRAY_GOOL_PORT" "XRAY_GOOL_UUID" "XRAY_GOOL_EMAIL" "HAPROXY_GOOL_PORT"
+
+        # Generate config files for PSIPHON
+        generate_xray_config "$TEMPLATE_FILE" "$PSIPHON_OUTPUT_FILE" "XRAY_PSIPHON_PORT" "XRAY_PSIPHON_UUID" "XRAY_PSIPHON_EMAIL" "HAPROXY_PSIPHON_PORT"
+    fi
+
+    # Generate config files for xray-local if XRAY_LOCAL_ENABLED=true
+    if [ "$XRAY_LOCAL_ENABLED" = "true" ]; then
+        LOCAL_TEMPLATE_FILE="./xray/config-local.template.json"
+        LOCAL_OUTPUT_FILE="./xray/local_config.json"
+        generate_xray_config "$LOCAL_TEMPLATE_FILE" "$LOCAL_OUTPUT_FILE" "XRAY_LOCAL_PORT" "XRAY_LOCAL_UUID" "XRAY_LOCAL_EMAIL" ""
+    fi
 
 else
     echo "Xray configuration is disabled. Skipping config generation."
