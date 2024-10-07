@@ -39,6 +39,7 @@ Prerequisites installation method for debian based linux distributions:
 sudo apt install -y \
     docker.io \
     docker-compose-v2 \
+    uuid-runtime \
     git \
     make
     
