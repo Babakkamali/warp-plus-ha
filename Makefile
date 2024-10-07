@@ -1,5 +1,5 @@
 # Phony targets to prevent conflicts with file names
-.PHONY: all generate up ps down clean build ensure-exec require-configs init
+.PHONY: all generate up ps down clean build build-no-cache ensure-exec require-configs init
 
 # Default target
 all: generate
@@ -74,4 +74,7 @@ clean: down
 
 # Build Docker images without using cache
 build: require-configs
+	docker compose build
+
+build-no-cache: require-configs
 	docker compose build --no-cache
