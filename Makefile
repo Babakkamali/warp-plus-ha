@@ -1,5 +1,5 @@
 # Phony targets to prevent conflicts with file names
-.PHONY: all generate up ps down clean build ensure-exec require-configs init
+.PHONY: all generate up ps down clean build build-no-cache ensure-exec require-configs init
 
 # Default target
 all: generate
@@ -29,6 +29,15 @@ init:
 	@if [ ! -f .env ]; then \
 		cp .env.example .env; \
 		echo "Copied .env.example to .env. Please review and modify as needed."; \
+        	XRAY_GOOL_PORT=$$(shuf -i 49152-65535 -n 1); \
+	        XRAY_PSIPHON_PORT=$$(shuf -i 49152-65535 -n 1); \
+	        XRAY_GOOL_UUID=$$(uuidgen); \
+	        XRAY_PSIPHON_UUID=$$(uuidgen); \
+	        sed -i "s/^XRAY_GOOL_PORT=.*/XRAY_GOOL_PORT=$$XRAY_GOOL_PORT/" .env; \
+	        sed -i "s/^XRAY_GOOL_UUID=.*/XRAY_GOOL_UUID=$$XRAY_GOOL_UUID/" .env; \
+	        sed -i "s/^XRAY_PSIPHON_PORT=.*/XRAY_PSIPHON_PORT=$$XRAY_PSIPHON_PORT/" .env; \
+	        sed -i "s/^XRAY_PSIPHON_UUID=.*/XRAY_PSIPHON_UUID=$$XRAY_PSIPHON_UUID/" .env; \
+	        echo "Xray configuration (ports and UUIDs) generated and inserted into .env."; \
 	else \
 		echo ".env already exists. Skipping copy."; \
 	fi
@@ -41,6 +50,14 @@ generate: ensure-exec
 up: require-configs
 	docker compose up -d --remove-orphans
 	docker compose restart haproxy
+	@if docker compose ps | grep -q "xray-gool"; then \
+		echo "Restarting xray-gool..."; \
+		docker compose restart xray-gool; \
+	fi
+	@if docker compose ps | grep -q "xray-psiphon"; then \
+		echo "Restarting xray-psiphon..."; \
+		docker compose restart xray-psiphon; \
+	fi
 
 # Monitor Docker Compose services
 ps: require-configs
@@ -51,10 +68,13 @@ down: require-configs
 	docker compose down
 
 # Clean up generated files
-clean: down
-	rm -f docker-compose.yml haproxy/haproxy.cfg
+clean: down 
+	rm -f docker-compose.yml haproxy/haproxy.cfg xray/gool_config.json xray/psiphon_config.json
 	echo "Removed generated configuration files."
 
 # Build Docker images without using cache
 build: require-configs
+	docker compose build
+
+build-no-cache: require-configs
 	docker compose build --no-cache

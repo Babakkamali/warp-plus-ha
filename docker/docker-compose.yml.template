@@ -2,6 +2,8 @@ x-warp-plus-gool: &warp-plus-gool
   build: 
     context: .
     dockerfile: docker/Dockerfile.warp
+    args:
+      BASE_IMAGE_WARP: ${BASE_IMAGE_WARP}
   image: warp-plus:latest
   pull_policy: never
   labels:
@@ -17,6 +19,10 @@ x-warp-plus-psiphon: &warp-plus-psiphon
   labels:
     autoheal-app: ${PSIPHON_AUTOHEAL_APP}
 
+x-xray-core: &xray-core
+  image: ${BASE_IMAGE_XRAY}
+  restart: always
+
 services:
 ### gool services
 {{GOOL_SERVICES}}
@@ -26,15 +32,19 @@ services:
 {{PSIPHON_SERVICES}}
 ###
 
+### xray services
+{{XRAY_SERVICES}}
+###
+
   haproxy:
     build:
       context: .
       dockerfile: docker/Dockerfile.haproxy
+      args:
+        BASE_IMAGE_HAPROXY: ${BASE_IMAGE_HAPROXY}
     image: haproxy-warp:latest
     pull_policy: never
-    ports:
-      - "${HAPROXY_GOOL_PORT}:1080"
-      - "${HAPROXY_PSIPHON_PORT}:1081"
+  ### HAPROXY_PORTS ###
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     depends_on:
@@ -42,7 +52,7 @@ services:
     labels:
       autoheal-app: ${HAPROXY_AUTOHEAL_APP}
     restart: always
-
+  
   autoheal:
     environment:
       AUTOHEAL_CONTAINER_LABEL: autoheal-app

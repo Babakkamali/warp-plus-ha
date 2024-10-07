@@ -1,4 +1,4 @@
 docker-compose.yml
-haproxy/haproxy.cfg
 *.tmp
+*.yml.intermediate
 .env
