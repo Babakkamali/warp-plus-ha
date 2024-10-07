@@ -50,6 +50,14 @@ generate: ensure-exec
 up: require-configs
 	docker compose up -d --remove-orphans
 	docker compose restart haproxy
+	@if docker compose ps | grep -q "xray-gool"; then \
+		echo "Restarting xray-gool..."; \
+		docker compose restart xray-gool; \
+	fi
+	@if docker compose ps | grep -q "xray-psiphon"; then \
+		echo "Restarting xray-psiphon..."; \
+		docker compose restart xray-psiphon; \
+	fi
 
 # Monitor Docker Compose services
 ps: require-configs
