@@ -24,6 +24,27 @@ PSIPHON_SERVICES=""
 HAPROXY_DEPENDENCIES=""
 GOOL_SERVERS=""
 PSIPHON_SERVERS=""
+HAPROXY_PORTS=""
+
+# Validate NUM_GOOL and NUM_PSIPHON
+if ! [[ "$NUM_GOOL" =~ ^[0-9]+$ ]]; then
+    echo "Error: NUM_GOOL must be a positive integer."
+    exit 1
+fi
+
+if ! [[ "$NUM_PSIPHON" =~ ^[0-9]+$ ]]; then
+    echo "Error: NUM_PSIPHON must be a positive integer."
+    exit 1
+fi
+
+# Conditional check for SOCKS_PUBLISH
+if [ "$HAPROXY_SOCKS_PUBLISH" = "true" ]; then
+  HAPROXY_PORTS='    ports:
+      - "${HAPROXY_GOOL_PORT}:1080"
+      - "${HAPROXY_PSIPHON_PORT}:1081"'
+else
+  echo "SOCKS publishing disabled. Skipping port publishing."
+fi
 
 # Generate GOOL services
 for i in $(seq 1 $NUM_GOOL); do
@@ -125,7 +146,22 @@ sed '/{{XRAY_SERVICES}}/{
 sed '/{{HAPROXY_DEPENDENCIES}}/{
     r haproxy_dependencies.tmp
     d
-}' > docker-compose.yml
+}' > docker-compose.yml.intermediate
+
+# Conditionally replace or remove the HAPROXY_PORTS placeholder
+if [ "$HAPROXY_SOCKS_PUBLISH" = "true" ]; then
+    # Write HAPROXY_PORTS content to a temporary file
+    echo "$HAPROXY_PORTS" > haproxy_ports.tmp
+    
+    # Use sed to insert the contents of haproxy_ports.tmp and delete the placeholder line
+    sed '/### HAPROXY_PORTS ###/{
+        r haproxy_ports.tmp
+        d
+    }' docker-compose.yml.intermediate > docker-compose.yml
+else
+    # Remove the placeholder if ports are not applied
+    sed '/### HAPROXY_PORTS ###/d' docker-compose.yml.intermediate > docker-compose.yml
+fi
 
 echo "docker-compose.yml has been ${status_docker}."
 
@@ -148,7 +184,7 @@ sed '/{{PSIPHON_SERVERS}}/{
 echo "haproxy/haproxy.cfg has been ${status_haproxy}."
 
 # Clean up temporary files
-rm -f gool_services.tmp psiphon_services.tmp haproxy_dependencies.tmp gool_servers.tmp psiphon_servers.tmp xray_services.tmp
+rm -f gool_services.tmp psiphon_services.tmp haproxy_dependencies.tmp gool_servers.tmp psiphon_servers.tmp xray_services.tmp haproxy_ports.tmp docker-compose.yml.intermediate
 
 
 ### xray config generation

@@ -40,9 +40,7 @@ services:
       dockerfile: docker/Dockerfile.haproxy
     image: haproxy-warp:latest
     pull_policy: never
-    ports:
-      - "${HAPROXY_GOOL_PORT}:1080"
-      - "${HAPROXY_PSIPHON_PORT}:1081"
+  ### HAPROXY_PORTS ###
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     depends_on:
