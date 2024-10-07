@@ -2,6 +2,8 @@ x-warp-plus-gool: &warp-plus-gool
   build: 
     context: .
     dockerfile: docker/Dockerfile.warp
+    args:
+      BASE_IMAGE_WARP: ${BASE_IMAGE_WARP}
   image: warp-plus:latest
   pull_policy: never
   labels:
@@ -38,6 +40,8 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.haproxy
+      args:
+        BASE_IMAGE_HAPROXY: ${BASE_IMAGE_HAPROXY}
     image: haproxy-warp:latest
     pull_policy: never
   ### HAPROXY_PORTS ###
