@@ -1,9 +1,6 @@
-# Warp Plus Auto-Managed Load-Balanced Proxy with Auto-Healing
+# Warp Plus HA Proxy with Auto-Healing
 
-This project provides an easy, automated, scalable, and resilient proxy solution using [Warp Plus](https://github.com/bepass-org/warp-plus) in combination with **gool** (Warp-in-Warp) and **Psiphon** services. It leverages Docker and HAProxy to create a load-balanced environment that automatically manages service instances, handles sudden disconnects, and ensures optimal proxy performance.
-## Overview
-
-This project was created to address the need for a robust and self-healing proxy system that can handle high availability and scaling. By integrating Warp Plus with gool and Psiphon services, the system provides a reliable proxy solution capable of managing multiple service instances, load balancing, and automatic health checks.
+TThis project offers a simple and automated solution for bypassing geo-location restrictions using [Warp Plus](https://github.com/bepass-org/warp-plus) in combination with **gool** (Warp-in-Warp) and **Psiphon** services. It leverages Docker and HAProxy to create a load-balanced environment that automatically manages service instances, handles sudden disconnects, and ensures optimal proxy performance.
 
 ## Features
 
@@ -57,14 +54,6 @@ make init
 
 you can read all the variables and change them to your needs
 
-### Generate Configuration Files
-
-To generate the `docker-compose.yml` and `haproxy/haproxy.cfg` files with default settings:
-
-```
-make generate
-```
-
 To specify the number of gool and Psiphon services, edit .env file:
 
 ```
@@ -75,6 +64,16 @@ NUM_GOOL=5
 NUM_PSIPHON=2
 ```
 and rerun generate command from make file
+
+### Generate Configuration Files
+
+This command will generate the necessary files for running the project
+
+```
+make generate
+```
+
+The generated files are `docker-compose.yml` and `haproxy/haproxy.cfg`, based on the .env content.
 
 ### Start the Services
 
@@ -126,6 +125,7 @@ You can customize the number of gool and Psiphon services by setting the env var
 Example:
 
 ```
+make init
 vim .env
 make generate
 make up
